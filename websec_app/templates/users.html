@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}用户列表 - Web安全实验平台{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h4 class="mb-0">用户管理</h4>
+  <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('auth.register') }}">新增用户</a>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-striped mb-0">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>用户名</th>
+            <th>角色</th>
+            <th>显示名</th>
+            <th>创建时间</th>
+            <th class="text-end">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td>{{ u.id }}</td>
+            <td>{{ u.username }}</td>
+            <td>
+              {% if u.is_admin %}
+                <span class="badge bg-warning text-dark">Admin</span>
+              {% else %}
+                <span class="badge bg-secondary">User</span>
+              {% endif %}
+            </td>
+            <td>{{ u.display_name }}</td>
+            <td class="text-muted">{{ u.created_at }}</td>
+            <td class="text-end">
+              {% if u.id != g.user.id %}
+                <form method="post" action="{{ url_for('auth.user_delete', user_id=u.id) }}" class="d-inline">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                  <button class="btn btn-sm btn-outline-danger"
+                          onclick="return confirm('确认删除用户：{{ u.username }} ？');">
+                    删除
+                  </button>
+                </form>
+              {% else %}
+                <span class="text-muted small">当前账号</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

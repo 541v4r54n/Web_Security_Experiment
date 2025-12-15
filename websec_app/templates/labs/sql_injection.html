@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}SQL 注入实验 - Web安全实验平台{% endblock %}
+{% block content %}
+<h4 class="mb-3">SQL 注入实验</h4>
+
+<div class="alert alert-secondary small">
+  示例 payload（漏洞版）：<code>%' OR 1=1 --</code>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card shadow-sm border-warning">
+      <div class="card-body">
+        <h5 class="text-warning">漏洞版（拼接 SQL）</h5>
+        <form method="post" action="{{ url_for('labs.sql_injection_insecure') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <div class="mb-2">
+            <label class="form-label">关键字</label>
+            <input class="form-control" name="keyword" placeholder="输入关键字或 payload" />
+          </div>
+          <button class="btn btn-warning w-100">查询</button>
+        </form>
+
+        {% if insecure %}
+          <hr />
+          <div class="small text-muted mb-1">执行 SQL（展示用）：</div>
+          <pre class="bg-light p-2 small">{{ insecure.sql }}</pre>
+          {% if insecure.error %}
+            <div class="alert alert-danger small">错误：{{ insecure.error }}</div>
+          {% endif %}
+          <div class="small">结果：{{ insecure.rows|length }} 条</div>
+          <ul class="list-group list-group-flush">
+            {% for r in insecure.rows %}
+              <li class="list-group-item">
+                <div class="fw-semibold">{{ r.title }}</div>
+                <div class="small text-muted">{{ r.content }}</div>
+              </li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card shadow-sm border-success">
+      <div class="card-body">
+        <h5 class="text-success">防御版（参数化查询）</h5>
+        <form method="post" action="{{ url_for('labs.sql_injection_secure') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <div class="mb-2">
+            <label class="form-label">关键字</label>
+            <input class="form-control" name="keyword" placeholder="输入关键字" />
+          </div>
+          <button class="btn btn-success w-100">查询</button>
+        </form>
+
+        {% if secure %}
+          <hr />
+          <div class="small text-muted mb-1">执行 SQL（展示用）：</div>
+          <pre class="bg-light p-2 small">{{ secure.sql }}</pre>
+          <div class="small">结果：{{ secure.rows|length }} 条</div>
+          <ul class="list-group list-group-flush">
+            {% for r in secure.rows %}
+              <li class="list-group-item">
+                <div class="fw-semibold">{{ r.title }}</div>
+                <div class="small text-muted">{{ r.content }}</div>
+              </li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

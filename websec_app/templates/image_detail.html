@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}图片详情 - Web安全实验平台{% endblock %}
+{% block content %}
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h5 class="mb-1">{{ image.original_name }}</h5>
+    <div class="text-muted small mb-3">
+      生成时间：{{ image.created_at }} ｜ 水印：{{ image.watermark_text or '-' }}
+    </div>
+    <a class="btn btn-primary" href="{{ url_for('images.download', image_id=image.id) }}">下载水印图</a>
+    <a class="btn btn-outline-secondary" href="{{ url_for('images.index') }}">返回列表</a>
+  </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}命令注入实验 - Web安全实验平台{% endblock %}
+{% block content %}
+<h4 class="mb-3">命令注入实验</h4>
+
+<div class="alert alert-secondary small">
+  Windows 示例 payload（漏洞版）：<code>127.0.0.1 &amp; whoami</code>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card shadow-sm border-warning">
+      <div class="card-body">
+        <h5 class="text-warning">漏洞版（shell=True 拼接命令）</h5>
+        <form method="post" action="{{ url_for('labs.command_injection_insecure') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <div class="mb-2">
+            <label class="form-label">Host</label>
+            <input class="form-control" name="host" placeholder="127.0.0.1" />
+          </div>
+          <button class="btn btn-warning w-100">执行</button>
+        </form>
+
+        {% if insecure %}
+          <hr />
+          <div class="small text-muted mb-1">执行命令（展示用）：</div>
+          <pre class="bg-light p-2 small">{{ insecure.cmd }}</pre>
+          {% if insecure.error %}
+            <div class="alert alert-danger small">错误：{{ insecure.error }}</div>
+          {% endif %}
+          <div class="small text-muted mb-1">输出：</div>
+          <pre class="bg-dark text-light p-2 small" style="white-space: pre-wrap;">{{ insecure.output }}</pre>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card shadow-sm border-success">
+      <div class="card-body">
+        <h5 class="text-success">防御版（输入校验 + shell=False）</h5>
+        <form method="post" action="{{ url_for('labs.command_injection_secure') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <div class="mb-2">
+            <label class="form-label">Host</label>
+            <input class="form-control" name="host" placeholder="127.0.0.1 或 example.com" />
+          </div>
+          <button class="btn btn-success w-100">执行</button>
+        </form>
+
+        {% if secure %}
+          <hr />
+          <div class="small text-muted mb-1">执行命令（展示用）：</div>
+          <pre class="bg-light p-2 small">{{ secure.cmd }}</pre>
+          {% if secure.error %}
+            <div class="alert alert-danger small">错误：{{ secure.error }}</div>
+          {% endif %}
+          <div class="small text-muted mb-1">输出：</div>
+          <pre class="bg-dark text-light p-2 small" style="white-space: pre-wrap;">{{ secure.output }}</pre>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

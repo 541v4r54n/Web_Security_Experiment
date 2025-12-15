@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}攻防实验 - Web安全实验平台{% endblock %}
+{% block content %}
+<div class="alert alert-warning">
+  <div class="fw-semibold">注意</div>
+  <div class="small">本模块包含“故意构造的漏洞代码”，仅用于课程实验，请勿用于生产环境或公网部署。</div>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">SQL 注入（漏洞版 / 防御版）</h5>
+        <p class="card-text">演示字符串拼接 SQL 的风险，以及参数化查询的防御。</p>
+        <a class="btn btn-warning" href="{{ url_for('labs.sql_injection_page') }}">进入</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">命令注入（漏洞版 / 防御版）</h5>
+        <p class="card-text">演示 shell=True 拼接命令的风险，以及输入校验 + shell=False 的防御。</p>
+        <a class="btn btn-warning" href="{{ url_for('labs.command_injection_page') }}">进入</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

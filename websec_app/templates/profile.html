@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}个人中心 - Web安全实验平台{% endblock %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-md-7">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h4 class="mb-3">个人信息维护</h4>
+        <form method="post" action="{{ url_for('auth.profile_post') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <div class="mb-3">
+            <label class="form-label">显示名</label>
+            <input class="form-control" name="display_name" value="{{ g.user.display_name }}" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">描述</label>
+            <textarea class="form-control" name="description" rows="4">{{ g.user.description }}</textarea>
+          </div>
+          <button class="btn btn-primary">保存</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-5">
+    <div class="card shadow-sm border-danger">
+      <div class="card-body">
+        <h5 class="text-danger">删除账号</h5>
+        <p class="text-muted small mb-2">该操作会删除你的账号及图片记录（不可恢复）。</p>
+        <form method="post" action="{{ url_for('auth.account_delete') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <div class="mb-2">
+            <label class="form-label small">输入你的用户名以确认</label>
+            <input class="form-control" name="confirm" placeholder="{{ g.user.username }}" />
+          </div>
+          <button class="btn btn-outline-danger w-100">确认删除</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

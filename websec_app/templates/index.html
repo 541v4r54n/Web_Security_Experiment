@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}主页 - Web安全实验平台{% endblock %}
+{% block content %}
+<div class="p-4 p-md-5 mb-4 text-bg-dark rounded-3">
+  <div class="container-fluid py-3">
+    <h1 class="display-6">Web安全实验平台</h1>
+    <p class="col-md-10 fs-6 mb-0">
+      作业一：本地可部署的 Web 应用（用户管理 / 会话管理 / 操作记录 / 核心业务：图片水印）。
+      作业二：在同一平台完成 SQL 注入与命令注入的“漏洞版/防御版”对比实验，并配合抓包与测试。
+    </p>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">1) 用户与会话</h5>
+        <p class="card-text">注册、登录/登出、资料维护、账号删除、操作记录。</p>
+        <a class="btn btn-primary" href="{{ url_for('auth.register') }}">去注册</a>
+        <a class="btn btn-outline-primary" href="{{ url_for('auth.login') }}">去登录</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">2) 图片水印管理</h5>
+        <p class="card-text">上传图片，生成水印图并下载。</p>
+        <a class="btn btn-success" href="{{ url_for('images.index') }}">进入模块</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-12">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">3) Web攻防实验</h5>
+        <p class="card-text mb-2">SQL 注入、命令注入：提供漏洞版与防御版便于对比。</p>
+        {% if g.user %}
+          <a class="btn btn-warning" href="{{ url_for('labs.index') }}">进入实验</a>
+        {% else %}
+          <span class="text-muted">先登录后可进入实验页面。</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

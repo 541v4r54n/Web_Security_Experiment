@@ -1,0 +1,18 @@
+[tools]
+python = "3.13.5"
+
+[tasks.setup]
+description = "Create venv, install deps, init db, gen https cert"
+run = ["python tools/bootstrap.py setup"]
+
+[tasks.run-http]
+description = "Run on HTTP (http://127.0.0.1:5000)"
+run = ["python tools/bootstrap.py run-http --host 127.0.0.1 --port 5000"]
+
+[tasks.run-https]
+description = "Run on HTTPS (https://127.0.0.1:5443)"
+run = ["python tools/bootstrap.py run-https --host 127.0.0.1 --port 5443"]
+
+[tasks.self-check]
+description = "Sanity check local environment"
+run = ["python tools/bootstrap.py self-check"]
