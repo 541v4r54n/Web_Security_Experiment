@@ -1,6 +1,14 @@
 {% extends "base.html" %}
 {% block title %}图片水印 - Web安全实验平台{% endblock %}
 {% block content %}
+<div class="d-flex align-items-end justify-content-between flex-wrap gap-2 mb-3">
+  <div>
+    <h4 class="mb-0">图片水印管理</h4>
+    <div class="text-muted small">支持搜索、分页、批量删除、批量重新生成水印</div>
+  </div>
+  <div class="small text-muted">共 {{ total or 0 }} 条</div>
+</div>
+
 <div class="row g-3">
   <div class="col-lg-4">
     <div class="card shadow-sm">
@@ -20,54 +28,175 @@
         </form>
       </div>
     </div>
-    <div class="alert alert-info mt-3 small">
-      前端展示使用 Vue3（CDN），便于作业一“JS 框架”要求与抓包分析。
-    </div>
   </div>
 
-  <div class="col-lg-8" id="image-app">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <h5 class="mb-0">我的图片</h5>
-      <button class="btn btn-sm btn-outline-primary" type="button" @click="refresh">刷新</button>
-    </div>
-      <div v-if="loading" class="text-muted">加载中...</div>
-      <div v-else>
-        <div v-if="images.length === 0" class="text-muted">暂无记录</div>
-        <div class="list-group shadow-sm" v-else>
-          <a class="list-group-item list-group-item-action" v-for="img in images" :key="img.id" :href="detailUrl(img.id)">
-            <div class="d-flex w-100 justify-content-between">
-              <div>
-                <div class="fw-semibold">{{ img.original_name }}</div>
-                <div class="small text-muted">水印：{{ img.watermark_text || '-' }}</div>
-              </div>
-              <small class="text-muted">{{ img.created_at }}</small>
+  <div class="col-lg-8">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <form class="row g-2 align-items-center" method="get" action="{{ url_for('images.index') }}">
+          <div class="col-md-6">
+            <input class="form-control" name="q" value="{{ q or '' }}" placeholder="搜索：文件名 / 水印文字" />
+          </div>
+          <div class="col-md-3">
+            <select class="form-select" name="per_page">
+              {% for n in [6, 12, 24, 48, 60] %}
+                <option value="{{ n }}" {% if per_page == n %}selected{% endif %}>每页 {{ n }} 条</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3 d-grid">
+            <button class="btn btn-outline-primary">搜索</button>
+          </div>
+          {% if q %}
+            <div class="col-12 small">
+              <a href="{{ url_for('images.index', per_page=per_page) }}">清空搜索</a>
             </div>
-          </a>
+          {% endif %}
+        </form>
+
+        <hr />
+
+        <form id="bulkForm" method="post" action="{{ url_for('images.bulk_action') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <input type="hidden" name="next" value="{{ request.full_path }}" />
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+            <div class="d-flex gap-2 flex-wrap">
+              <button class="btn btn-sm btn-outline-danger"
+                      type="submit"
+                      name="action"
+                      value="delete"
+                      onclick="return confirm('确认删除选中记录？该操作不可恢复。');">
+                批量删除
+              </button>
+              <button class="btn btn-sm btn-outline-success"
+                      type="submit"
+                      name="action"
+                      value="regenerate"
+                      onclick="return confirm('确认重新生成选中记录的水印图？');">
+                批量重新生成水印
+              </button>
+            </div>
+            <div class="d-flex gap-2 align-items-center flex-wrap">
+              <input class="form-control form-control-sm"
+                     name="watermark_text"
+                     placeholder="可选：覆盖水印文字（留空则使用原值）"
+                     style="min-width: 240px;" />
+              <span class="small text-muted">已选 <span id="selectedCount">0</span></span>
+            </div>
+          </div>
+        </form>
+
+        {% if images and images|length > 0 %}
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th style="width: 44px;">
+                    <input class="form-check-input" type="checkbox" id="checkAll" />
+                  </th>
+                  <th style="width: 140px;">预览</th>
+                  <th>文件</th>
+                  <th>水印</th>
+                  <th style="width: 170px;">时间</th>
+                  <th class="text-end" style="width: 210px;">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for img in images %}
+                  <tr>
+                    <td>
+                      <input class="form-check-input row-check"
+                             type="checkbox"
+                             name="image_ids"
+                             value="{{ img.id }}"
+                             form="bulkForm" />
+                    </td>
+                    <td>
+                      <a href="{{ url_for('images.detail', image_id=img.id) }}">
+                        <img class="rounded border"
+                             alt="preview"
+                             src="{{ url_for('images.preview', image_id=img.id) }}"
+                             style="width: 120px; height: 80px; object-fit: cover;" />
+                      </a>
+                    </td>
+                    <td class="fw-semibold text-truncate" style="max-width: 260px;">
+                      {{ img.original_name }}
+                    </td>
+                    <td class="text-muted text-truncate" style="max-width: 220px;">
+                      {{ img.watermark_text or '-' }}
+                    </td>
+                    <td class="text-muted small">{{ img.created_at }}</td>
+                    <td class="text-end">
+                      <a class="btn btn-sm btn-outline-primary" href="{{ url_for('images.detail', image_id=img.id) }}">详情</a>
+                      <a class="btn btn-sm btn-outline-success" href="{{ url_for('images.download', image_id=img.id) }}">下载</a>
+                      <form class="d-inline" method="post" action="{{ url_for('images.delete', image_id=img.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                        <button class="btn btn-sm btn-outline-danger" onclick="return confirm('确认删除该图片记录？');">删除</button>
+                      </form>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="text-muted">暂无记录</div>
+        {% endif %}
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
+          <div class="small text-muted">第 {{ page or 1 }} / {{ pages or 1 }} 页，共 {{ total or 0 }} 条</div>
+          <nav aria-label="pagination">
+            <ul class="pagination pagination-sm mb-0">
+              <li class="page-item {% if (page or 1) <= 1 %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('images.index', q=q, per_page=per_page, page=(page or 1) - 1) }}">上一页</a>
+              </li>
+              {% for p in (page_items or [1]) %}
+                {% if p is none %}
+                  <li class="page-item disabled"><span class="page-link">…</span></li>
+                {% elif p == (page or 1) %}
+                  <li class="page-item active"><span class="page-link">{{ p }}</span></li>
+                {% else %}
+                  <li class="page-item">
+                    <a class="page-link" href="{{ url_for('images.index', q=q, per_page=per_page, page=p) }}">{{ p }}</a>
+                  </li>
+                {% endif %}
+              {% endfor %}
+              <li class="page-item {% if (page or 1) >= (pages or 1) %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('images.index', q=q, per_page=per_page, page=(page or 1) + 1) }}">下一页</a>
+              </li>
+            </ul>
+          </nav>
         </div>
       </div>
+    </div>
   </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
-<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 <script>
-  const { createApp } = Vue;
-  createApp({
-    data() {
-      return { images: [], loading: true };
-    },
-    mounted() { this.refresh(); },
-    methods: {
-      detailUrl(id) { return `/images/${id}`; },
-      async refresh() {
-        this.loading = true;
-        const resp = await fetch('/api/images', { headers: { 'Accept': 'application/json' }});
-        const data = await resp.json();
-        this.images = data.images || [];
-        this.loading = false;
+  (function() {
+    const checkAll = document.getElementById('checkAll');
+    const rowChecks = Array.from(document.querySelectorAll('.row-check'));
+    const selectedCount = document.getElementById('selectedCount');
+
+    function updateCount() {
+      const count = rowChecks.filter(el => el.checked).length;
+      if (selectedCount) selectedCount.textContent = String(count);
+      if (checkAll) {
+        checkAll.checked = count > 0 && count === rowChecks.length;
+        checkAll.indeterminate = count > 0 && count < rowChecks.length;
       }
     }
-  }).mount('#image-app');
+
+    if (checkAll) {
+      checkAll.addEventListener('change', function() {
+        rowChecks.forEach(el => { el.checked = checkAll.checked; });
+        updateCount();
+      });
+    }
+    rowChecks.forEach(el => el.addEventListener('change', updateCount));
+    updateCount();
+  })();
 </script>
 {% endblock %}

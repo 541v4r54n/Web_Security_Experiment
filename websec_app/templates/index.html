@@ -1,13 +1,26 @@
 {% extends "base.html" %}
 {% block title %}主页 - Web安全实验平台{% endblock %}
 {% block content %}
-<div class="p-4 p-md-5 mb-4 text-bg-dark rounded-3">
-  <div class="container-fluid py-3">
-    <h1 class="display-6">Web安全实验平台</h1>
-    <p class="col-md-10 fs-6 mb-0">
-      作业一：本地可部署的 Web 应用（用户管理 / 会话管理 / 操作记录 / 核心业务：图片水印）。
-      作业二：在同一平台完成 SQL 注入与命令注入的“漏洞版/防御版”对比实验，并配合抓包与测试。
-    </p>
+<div class="ws-hero p-4 p-md-5 mb-4">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+    <div>
+      <h1 class="display-6 mb-2">Web安全实验平台</h1>
+      <div class="text-muted">
+        用户管理 / 会话管理 / 操作记录 / 核心业务：图片水印管理（上传 → 生成水印 → 在线查看/下载）
+      </div>
+      <div class="text-muted">
+        攻防实验：SQL 注入 + 命令注入（漏洞版/防御版对比）
+      </div>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      {% if g.user %}
+        <a class="btn btn-success" href="{{ url_for('images.index') }}">进入图片水印</a>
+        <a class="btn btn-outline-warning" href="{{ url_for('labs.index') }}">进入攻防实验</a>
+      {% else %}
+        <a class="btn btn-primary" href="{{ url_for('auth.register') }}">注册</a>
+        <a class="btn btn-outline-primary" href="{{ url_for('auth.login') }}">登录</a>
+      {% endif %}
+    </div>
   </div>
 </div>
 
@@ -46,4 +59,3 @@
   </div>
 </div>
 {% endblock %}
-

@@ -3,13 +3,41 @@
 {% block content %}
 <div class="card shadow-sm">
   <div class="card-body">
-    <h5 class="mb-1">{{ image.original_name }}</h5>
-    <div class="text-muted small mb-3">
-      生成时间：{{ image.created_at }} ｜ 水印：{{ image.watermark_text or '-' }}
+    <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+      <div>
+        <h5 class="mb-1">{{ image.original_name }}</h5>
+        <div class="text-muted small">
+          生成时间：{{ image.created_at }} ｜ 水印：{{ image.watermark_text or '-' }}
+        </div>
+      </div>
+      <div class="d-flex gap-2 flex-wrap">
+        <a class="btn btn-outline-secondary" href="{{ url_for('images.index') }}">返回列表</a>
+        <a class="btn btn-success" href="{{ url_for('images.download', image_id=image.id) }}">下载水印图</a>
+        <form method="post" action="{{ url_for('images.delete', image_id=image.id) }}" class="d-inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <button class="btn btn-outline-danger" onclick="return confirm('确认删除该图片记录？');">删除</button>
+        </form>
+      </div>
     </div>
-    <a class="btn btn-primary" href="{{ url_for('images.download', image_id=image.id) }}">下载水印图</a>
-    <a class="btn btn-outline-secondary" href="{{ url_for('images.index') }}">返回列表</a>
+
+    <hr />
+
+    <ul class="nav nav-pills mb-3" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-wm" type="button" role="tab">水印图</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-src" type="button" role="tab">原图</button>
+      </li>
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane fade show active" id="tab-wm" role="tabpanel">
+        <img class="img-fluid rounded border" alt="watermarked" src="{{ url_for('images.preview', image_id=image.id) }}" />
+      </div>
+      <div class="tab-pane fade" id="tab-src" role="tabpanel">
+        <img class="img-fluid rounded border" alt="original" src="{{ url_for('images.original', image_id=image.id) }}" />
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}
-

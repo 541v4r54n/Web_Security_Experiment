@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from functools import wraps
+from pathlib import Path
 
 from flask import (
     Blueprint,
+    current_app,
     flash,
     g,
     redirect,
@@ -17,6 +19,22 @@ from .db import fetch_many, fetch_one, get_db, log_action
 from .security import hash_password, set_session_logged_in, verify_password
 
 bp = Blueprint("auth", __name__)
+
+
+def _cleanup_user_image_files(user_id: int) -> None:
+    upload_dir = Path(current_app.config["UPLOAD_DIR"])
+    watermarked_dir = Path(current_app.config["WATERMARKED_DIR"])
+
+    rows = fetch_many("SELECT stored_name, watermarked_name FROM images WHERE user_id = ?", (user_id,))
+    for r in rows:
+        try:
+            (upload_dir / r["stored_name"]).unlink(missing_ok=True)
+        except Exception:
+            pass
+        try:
+            (watermarked_dir / r["watermarked_name"]).unlink(missing_ok=True)
+        except Exception:
+            pass
 
 
 def get_current_user() -> dict | None:
@@ -154,6 +172,7 @@ def account_delete():
         return redirect(url_for("auth.profile"))
 
     uid = g.user["id"]
+    _cleanup_user_image_files(uid)
     session.clear()
     get_db().execute("DELETE FROM users WHERE id = ?", (uid,))
     get_db().commit()
@@ -181,6 +200,7 @@ def user_delete(user_id: int):
         flash("用户不存在", "warning")
         return redirect(url_for("auth.users"))
 
+    _cleanup_user_image_files(int(user_id))
     get_db().execute("DELETE FROM users WHERE id = ?", (user_id,))
     get_db().commit()
     log_action(g.user["id"], "user_delete", f"target_id={user_id} username={target['username']}")
